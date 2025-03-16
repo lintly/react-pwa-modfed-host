@@ -1,50 +1,62 @@
-import React, { lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
+
 import "./App.css";
 import Counter from "./components/Counter";
-import { FBBadge } from "@fullbay/forge";
+import Header from "./components/Header";
 
-const Parts = lazy(
-  // @ts-ignore
-  async () => import("partsApp/parts-app")
+const Section1Component = lazy(async () =>
+  import("section1/MyComponent").catch(() => ({
+    default: ({
+      onLoadingError,
+    }: {
+      onLoadingError: (error: Error) => void;
+    }) => {
+      console.log("Unit error");
+      onLoadingError(new Error("Unable to load MyComponent"));
+      return <h5>MyComponent Module could not load at this time.</h5>;
+    },
+  }))
 );
 
-const SOs = lazy(
-  // @ts-ignore
-  async () => import("soApp/so-app")
+const Section2Component = lazy(async () =>
+  import("section2/MyComponent").catch(() => ({
+    default: ({
+      onLoadingError,
+    }: {
+      onLoadingError: (error: Error) => void;
+    }) => {
+      console.log("Unit error");
+      onLoadingError(new Error("Unable to load MyComponent"));
+      return <h5>MyComponent Module could not load at this time.</h5>;
+    },
+  }))
 );
 
-export default () => {
+function App() {
+  function errorHandler(e: Error) {
+    console.error(e.message);
+    // Your app is saved from bowing up!
+    // Do whatever you want here...
+  }
+
   return (
     <>
-      <div className="host">
-		<FBBadge children={"jeff says hi"} />
-        <div className="card">
-          <div className="icon">
-            <svg
-              enableBackground="new 0 0 512 512"
-              height="512px"
-              id="Layer_1"
-              version="1.1"
-              viewBox="0 0 512 512"
-              width="512px"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M316.01,199.02L256.134,14.817L196.239,199.02H1.134l158.102,113.324L98.53,496.487l157.604-114.232  l157.585,114.232l-60.687-184.143L511.134,199.02H316.01z M335.084,318.257l42.407,128.63L267.22,366.963l-11.086-8.033  l-11.086,8.033l-110.291,79.923l42.408-128.63l4.353-13.18l-11.289-8.08L59.903,217.909h136.336h13.724l4.242-13.051l41.929-128.957  l41.91,128.957l4.242,13.051h13.724h136.336l-110.327,79.088l-11.27,8.08L335.084,318.257z"
-                fill="#37404D"
-              />
-            </svg>
-          </div>
-          <div className="title">Fullbay Application</div>
-          <Counter />
-        </div>
+      <Header />
+      <Counter />
+      <div>
+        <h1>Section 1</h1>
+        <Suspense fallback="loading...">
+          <Section1Component onLoadingError={errorHandler} />
+        </Suspense>
       </div>
-      <Suspense fallback="loading...">
-        <Parts />
-      </Suspense>
-      <Suspense fallback="loading...">
-        <SOs />
-      </Suspense>
+      <div>
+        <h1>Section 2</h1>
+        <Suspense fallback="loading...">
+          <Section2Component onLoadingError={errorHandler} />
+        </Suspense>
+      </div>
     </>
   );
-};
+}
+
+export default App;
